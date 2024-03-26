@@ -1,0 +1,54 @@
+TOP FEATURES :
+
+GROSSE DIFF
+
+FEATURE 9
+FEATURE 22
+FEATURE 24
+FEATURE 29
+
+MOYENNE DIFF
+
+FEATURE 5
+
+PETITE DIFF     
+
+FEATURE 2
+FEATURE 4
+FEATURE 25
+FEATURE 28
+
+
+
+FEATURE 0 -> malin benin egal
+FEATURE 1 - M / B
+FEATURE 2 -> benin : valeur + petite, compact. malin : disparate, globalement + elevé. petite dif /!\ (chevauchement)
+FEATURE 3 -> benin : disparate, + compact vers le bas. malin : disparate, + compact vers le centre
+FEATURE 4 -> benin : tres compact, valeur + petite. malin : disparate, valeur moyenne jusqua elevée. petite dif /!\ (chavauchement)
+FEATURE 5 -> benin : tres compact, valeur basse. malin : tres disparate, + compact du du bas vers le centre. moyenne diff /!\ (chevauchement) -> tout les benins sont en bas
+FEATURE 6 -> benin : disparate central - basse. malin : disparate central
+FEATURE 7 -> benin : compact en bas et disparate jusquau centre .malin : tres disparate du bas vers le centre haut. m
+FEATURE 8 -> benin : compact en bas, quelque valeur dispersé en haut. malin : tres disparate du bas vers le haut
+FEATURE 9 -> benin : tres compact en bas. malin : disparate du bas vers le haut. grosse dif /!\
+FEATURE 10 -> benin : disparate du bas au centre. malin : disparate central
+FEATURE 11 -> benin : compact du bas au centre, quelque valeur en haut. malin : disparate du bas au centre
+FEATURE 12 -> benin : tres compact en bas. malin : compact disparate du bas au centre
+FEATURE 13 -> assez egal
+FEATURE 14 -> benin : tres comapct en bas. malin :compact en bas et disparate jusquau centre
+FEATURE 15 -> benin : tres compact en bas. malin : compact en bas et disparate un peu + haut
+FEATURE 16 -> benin : compact en bas et disparate jusquau centre. malin : compact en bas
+FEATURE 17 -> assez egal. valeur benine + compact en bas
+FEATURE 18 -> assez egal.
+FEATURE 19 -> tres compact en bas et egal sur le reste
+FEATURE 20 -> benin : compact moitié basse. malin: compact bas et quelque valeur disparate jusqua au 3eme quartile
+FEATURE 21 -> assez egal
+FEATURE 22 -> benin : compact en bas. malin : disparate au centre (entre centre bas et haut). grosse diff /!\
+FEATURE 23 -> benin : compact centre bas et disparate en haut. malin : disparate au centre
+FEATURE 24 -> benin : compact en bas. malin dispoarate central. grosse dif /!\
+FEATURE 25 -> benin : tres compact en bas. malin : +compact centre bas et disparate jusquau centre haut. petite diff /!\ (des valeurs se chevauche)
+FEATURE 26 -> benin : disparate du centre bas au centre haut. malin : disparate + au centre
+FEATURE 27 -> benin : compact en bas disparate au centre. malin : disparate du bas jusquau centre. quelque valeur en haut
+FEATURE 28 -> benin : compact en bas, disparate au centre. malin : compact au centre bas, disparate au centre haut. /!\ petite diff
+FEATURE 29 -> benin : compact centre bas, disparate centre et bas. malin : disparate du milieu jusquen haut. grosse diff /!\ (valeurs chevauché)
+FEATURE 30 -> benin : tres compact centre bas. malin : compact centre bas et disparate en haut.
+FEATURE 31 -> assez egal
