@@ -1,11 +1,12 @@
 {
 	"loss_function": "binarycrossentropy",
+	"early_stopping": true,
 	"layers": [
 		{"type": "Dense", "units": 24, "activation": "relu", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}},
 		{"type": "Dense", "units": 24, "activation": "relu", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}},
 		{"type": "Dense", "units": 2, "activation": "sigmoid", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}}
 	],
-	"epochs": 1001,
+	"epochs": 2001,
 	"batch_size": 0,
-	"optimizer": {"type": "Adam", "params": {}}
+	"optimizer": {"type": "SGD", "params": {"momentum": 0.9}}
 }

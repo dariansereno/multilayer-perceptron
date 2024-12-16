@@ -2,6 +2,18 @@ from abc import ABC, abstractmethod
 import numpy as np
 from .layer import Layer
 
+# Ces optimizers utilise pour la plupart l'Exponentially Weighted Moving Average (EWMA), qui permet
+# un descente plus smooth et plus calibrable.
+# Par exemple, pour une descente avec momemtum l'EWMA = (βVt + (1-β)ΔWt).
+# Ou β est le momentum [0, 1], Vt la vélocité actuelle ((βVt + (1-β)ΔWt) fait au tour d'avant, ou 0 si premier tour)
+# et ΔWt le gradient des poids de la couche. (Calcul equivalent pour les biais : (βVt + (1-β)ΔBt))
+#
+# Le β permet de specifie ce qui a le + d'importance entre la partie droite et gauche du calcul, ici
+# le momemtum de la descente (Vt) ou la valeur actuelle (ΔWt).
+# Si β = 0.5 : Vt * 0.5 ET (1-0.5)ΔWt = 0.5 * ΔWt. Les 2 ont le meme poids
+# Si β = 0.7 : Vt * 0.7 ET (1-0.7)ΔWt = 0.3 * ΔWt. La velocite a plus de poids que le gradient.
+# Si β = 0.3 : Vt * 0.3 ET (1-0.3)ΔWt = 0.7 * ΔWt. Le gradient a plus de poids que la velocite
+
 class Optimizer(ABC):
 	def __init__(self, learning_rate=1.0, decay=.0):
 		self.learning_rate = learning_rate
@@ -29,23 +41,30 @@ class SGD(Optimizer):
 		if (self.decay):
 			self.current_learning_rate = self.learning_rate * (1 / (1 + self.decay * self.iterations))
 
+	# From my test, option 2 and 1 are pretty similar. But Option 1 use the Exponentially Weighted Moving Average (EWMA), more lisible, more comprehensive that
+	# the option 2, and normally is the most optimized way. See top of the page.
+	
 	def update_params(self, layer):
 		if (self.momentum):
-			if not hasattr(layer, 'weight_momentums'):
-				layer.weight_momentums = np.zeros_like(layer.weights)
-				layer.bias_momentums = np.zeros_like(layer.biases)
+			if not hasattr(layer, 'cached_weights'):
+				layer.cached_weights = np.zeros_like(layer.weights)
+				layer.cached_biases = np.zeros_like(layer.biases)
+			weights_update = self.momentum * layer.cached_weights + (1 - self.momentum) * layer.dweights # OPTION 1
+			#weights_update = self.momentum * layer.cached_weights - self.current_learning_rate * layer.dweights # OPTION 2
+			layer.cached_weights = weights_update
 
-			weights_update = self.momentum * layer.weight_momentums - self.current_learning_rate * layer.dweights
-			layer.weight_momentums = weights_update
-
-			biases_update = self.momentum * layer.bias_momentums - self.current_learning_rate * layer.dbiases
-			layer.bias_momentums = biases_update
+			#biases_update = self.momentum * layer.cached_biases - self.current_learning_rate * layer.dbiases  # OPTION 2
+			biases_update = self.momentum * layer.cached_biases + (1 - self.momentum) * layer.dbiases # OPTION 1
+			layer.cached_biases = biases_update
 		else:
 			weights_update = -self.learning_rate * layer.dweights
 			biases_update = -self.learning_rate * layer.dbiases
 		
-		layer.weights += weights_update
-		layer.biases += biases_update
+		#layer.weights += weights_update  # OPTION 2
+		#layer.biases += biases_update # OPTION 2
+		layer.weights -= weights_update * self.learning_rate # OPTION 1
+		layer.biases -= biases_update * self.learning_rate # OPTION 1
+
 	
 	def post_update_params(self):
 		self.iterations += 1
@@ -90,12 +109,15 @@ class RMSProp(Optimizer):
 		
 		layer.cached_weights = self.rho * layer.cached_weights + (1 - self.rho) * (layer.dweights ** 2) 
 		layer.cached_biases = self.rho * layer.cached_biases + (1 - self.rho) * (layer.dbiases ** 2)
-		# rho regulate the imapct of weights and dweights (see Adadelta for more detail)
+		# rho method is a EWMA with Velocity on left and gradient^2 on right
 
 		layer.weights += -self.current_learning_rate * layer.dweights / (np.sqrt(layer.cached_weights) + self.epsilon)
 		layer.biases += -self.current_learning_rate * layer.dbiases / (np.sqrt(layer.cached_biases) + self.epsilon)
-		#here, we update the weight in terms of the product of learning_rate and dweights divided by the squareroot of the cache. A lil obscure for me rn
-		# but I think is to avoid dividing by enormous value sqrt(1000000) = 1000
+		# here, we update the weight in terms of the product of learning_rate and dweights divided by the squareroot of the cache. A lil obscure for me rn
+		# but I think is to avoid dividing by enormous value sqrt(1000000) = 1000. More the precedent velocity was important, 
+		# more the the division will be big, and littler will be the update (avoid too much momemtum certainly, visually,
+		# the gradient descent will avoid zig zaging and will be more straight forward to the minima) 
+		# Epsilon avoid dividing by zero.
 
 	def post_update_params(self):
 		self.iterations += 1

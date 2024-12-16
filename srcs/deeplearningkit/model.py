@@ -11,6 +11,7 @@ class Model:
 		self.activations = []
 		self.accuracies = []
 		self.losses = []
+		self.early_stop = null
 
 	def compile(self, optimizer=None, loss=None):
 		self.optimizer = optimizer
