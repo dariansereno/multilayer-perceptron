@@ -3,6 +3,7 @@ from . import activation as Activation
 from . import loss as Loss
 import numpy as np
 import matplotlib.pyplot as plt
+from . import EarlyStopping
 
 class Model:
 	def __init__(self):
@@ -11,11 +12,13 @@ class Model:
 		self.activations = []
 		self.accuracies = []
 		self.losses = []
-		self.early_stop = null
+		self.elapsed_epochs = 0
+		self.early_stopping: EarlyStopping.EarlyStopping = None
 
-	def compile(self, optimizer=None, loss=None):
+	def compile(self, optimizer=None, loss=None, early_stopping=None):
 		self.optimizer = optimizer
 		self.loss = loss
+		self.early_stopping = early_stopping
 
 	def add(self, layer: Layer.Layer, activation: Activation):
 		self.n_layer += 1
@@ -90,7 +93,7 @@ class Model:
 
 				epoch_losses.append(loss)
 				if (display):
-					if not epoch % 100:
+					if not epoch % 10:
 						if batch_size:
 							print(f' step: {step}, epoch: {epoch}, ' + f'acc: {accuracy:.3f}, ' + f'loss: {loss:.3f}, ' )
 						else:	
@@ -106,19 +109,22 @@ class Model:
 						feed = activation.dinputs
 					layer.backward(feed)
 					feed = layer.dinputs
-			
+				metrics = self.evaluate(x, y)
+				if self.early_stopping and self.early_stopping.should_stop(metrics):
+					break
 				# update
 				self.optimizer.pre_update_params()
 				for layer in self.layers:
 					self.optimizer.update_params(layer)
 				self.optimizer.post_update_params()
+			self.elapsed_epochs += 1
 			avg_accuracy = np.mean(epoch_accuracies)
 			avg_loss = np.mean(epoch_losses)
 			self.accuracies.append(avg_accuracy)
 			self.losses.append(avg_loss)
 
 		if (plot):
-			self.plot(epochs)
+			self.plot(self.elapsed_epochs)
 
 	def evaluate(self, x, y):
 		x = np.array(x)
@@ -144,10 +150,7 @@ class Model:
 		predictions = self.predict(feed)
 		accuracy = np.mean(predictions == y)
 
-		print(f'accuracy: {accuracy:.3f}')
-		true_table = np.array([1 if  pred == real else 0 for pred, real in zip(predictions, y)]).reshape(1, -1)
-		print("true table : ", true_table)
-		return {"prediction": predictions, "accuracy": accuracy}
+		return {"prediction": predictions, "val_accuracy": accuracy, "val_loss": loss, "true_table": [1 if pred == y_true else 0 for pred, y_true in zip(predictions, y)]}
 		#return {"predictions": predictions, "accuracy": accuracy, "loss": loss, "true_table": true_table}
 	
 	def plot(self, epochs):

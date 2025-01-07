@@ -9,6 +9,7 @@ class Loss(ABC):
 	def forward(self, y_pred, y_true):
 		pass
 	
+	@abstractmethod
 	def backward(self, dvalues, y_true):
 		pass
 
@@ -17,18 +18,6 @@ class Loss(ABC):
 		data_loss = np.mean(sample_losses) # calcul la moyenne de la loss
 		return data_loss
 	
-	def regularization_loss(self, layer: Layer):
-		loss = 0
-
-		if (layer.weight_regularizer_l1):
-			loss += layer.weight_regularizer_l1 * np.sum(np.abs(layer.weights))
-		if (layer.bias_regularizer_l1):
-			loss += layer.bias_regularizer_l1 * np.sum(np.abs(layer.biases))
-		if (layer.weight_regularizer_l1):
-			loss += layer.weight_regularizer_l1 * np.sum(np.square(layer.weights))
-		if (layer.bias_regularizer_l2):
-			loss += layer.bias_regularizer_l2 * np.sum(np.square(layer.biases))
-
 class CategoricalCrossEntropy(Loss):
 	def forward(self, y_pred, y_true: np.ndarray):
 		samples = len(y_pred)

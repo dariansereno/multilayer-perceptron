@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from tools import extract_csv
 
-tolerance = 0.7
+tolerance = 0.5
 
 class PreprocessingError(Exception):
 	pass
@@ -26,14 +26,30 @@ def convert_target_column(df: pd.DataFrame):
 	df[0], df[target_column] = df[target_column].copy(), df[0].copy()
 	le = LabelEncoder()
 	df[0] = le.fit_transform(df[0])
+	df.rename(columns={0: "predict"}, inplace=True)
 	return df
 
+def compute_correlation(x, y):
+	x_mean = np.mean(x)
+	y_mean = np.mean(y)
+
+	x_diff = x - x_mean
+	y_diff = y - y_mean
+
+	numerator = np.sum(x_diff * y_diff)
+
+	denominator = np.sqrt(np.sum(x_diff**2) * np.sum(y_diff**2))
+	return (numerator / denominator)
+
+#Ne sert a rien car supprimes les valeurs qui n'ont pas de relations linéaire alors que le modele
+#peut trouver d'autre type de relation
 def drop_unrelated_columns(df: pd.DataFrame):
-	for i in range(31):
-		if (i != 1):
-			correlation = df[0].corr(df[i])
+	for i in range(len(df.columns)):
+		if (i != 0):
+			correlation = compute_correlation(df[0], df[i])
 			if (correlation < tolerance):
 				df.drop(i, axis=1, inplace=True)
+	exit()
 	label_map = {old: new for new, old in enumerate(df.columns)}
 	label_map[0] = "predict"
 	df = df.rename(columns=label_map)
@@ -65,7 +81,7 @@ def preprocess_binary_output_data(data: str | pd.DataFrame):
 		raise ValueError("preprocess_binary_output_data(): Invalid type")
 
 	df = convert_target_column(df)
-	df = drop_unrelated_columns(df)
+	#df = drop_unrelated_columns(df)
 	without_pred_df = df.drop("predict", axis=1)
 	df[df.columns[1:]] = standardize_data(without_pred_df)
 

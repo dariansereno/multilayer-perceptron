@@ -3,20 +3,22 @@ import deeplearningkit as nn
 import numpy as np
 from preprocess import preprocess_binary_output_data
 from spiral_data import create_data
-from tools import extract_csv
+from tools import extract_csv, to_one_hot
 import pandas as pd
 
-if __name__ == "__main__":
+def main():
 	#Model: nn.Model = nn.parse_model_json("../model.json")
 	dataset: pd.DataFrame = None
 	model: nn.Model = None
 	isDataset: bool = False
 	isModel: bool = False
 
+	
+
 	print("	- Multilayer Perceptron - \n")
 	print("you can exit by typing : 'exit' or 'quit' at anytime\n")
 	while True:
-		try:
+		#try:
 			print("--- choose phase : --")
 			print("1) preprocess dataset")
 			if dataset is not None:
@@ -49,13 +51,15 @@ if __name__ == "__main__":
 				model = nn.compile_and_fit_parsed_model(model_data, preprocess_func=None, data=dataset)
 				isModel = True
 			elif (option_choosed == 3 and isDataset and isModel):
-				model.evaluate(test_X, test_Y)
+				res = model.evaluate(test_X, test_Y)
+				print("Accuracy : ", res["val_accuracy"], "loss : ", res["val_loss"], "true table: ", res["true_table"])
 			else:
 				print("Invalid input.")
-		except Exception as e:
-			print("Error : ", e)
+		#except Exception as e:
+		#	print("Error : ", e)
 
 
 
 	#model = nn.Model()
-	
+if __name__ == "__main__":
+	main()

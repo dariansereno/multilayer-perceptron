@@ -57,13 +57,13 @@ class SGD(Optimizer):
 			biases_update = self.momentum * layer.cached_biases + (1 - self.momentum) * layer.dbiases # OPTION 1
 			layer.cached_biases = biases_update
 		else:
-			weights_update = -self.learning_rate * layer.dweights
-			biases_update = -self.learning_rate * layer.dbiases
+			weights_update = -self.current_learning_rate * layer.dweights
+			biases_update = -self.current_learning_rate * layer.dbiases
 		
 		#layer.weights += weights_update  # OPTION 2
 		#layer.biases += biases_update # OPTION 2
-		layer.weights -= weights_update * self.learning_rate # OPTION 1
-		layer.biases -= biases_update * self.learning_rate # OPTION 1
+		layer.weights -= weights_update * self.current_learning_rate # OPTION 1
+		layer.biases -= biases_update * self.current_learning_rate # OPTION 1
 
 	
 	def post_update_params(self):
@@ -82,7 +82,7 @@ class Adagrad(Optimizer):
 		if not hasattr(layer, "cached_weights"):
 			layer.cached_weights = np.zeros_like(layer.weights)
 			layer.cached_biases = np.zeros_like(layer.biases)
-		
+
 		layer.cached_weights += layer.dweights ** 2
 		layer.cached_biases += layer.dbiases ** 2
 		layer.weights += -self.current_learning_rate * layer.dweights / (np.sqrt(layer.cached_weights) + self.epsilon)
@@ -121,37 +121,6 @@ class RMSProp(Optimizer):
 
 	def post_update_params(self):
 		self.iterations += 1
-
-
-class Adadelta(Optimizer):
-	def __init__(self, epsilon=1e-7, rho=0.9 ,**kwargs):
-		self.epsilon = epsilon
-		self.rho = rho
-
-
-	def pre_update_params(self):
-		pass
-
-	def update_params(self, layer: Layer):
-		if not hasattr(layer, "cached_weights"):
-			layer.cached_weights = np.zeros_like(layer.weights)
-			layer.cached_biases = np.zeros_like(layer.biases)
-			layer.cached_weights_prev = np.zeros_like(layer.weights)
-			layer.cached_biases_prev = np.zeros_like(layer.biases)
-		
-		layer.cached_weights = self.rho * layer.cached_weights + (1 - self.rho) * (layer.dweights ** 2)
-		layer.cached_biases = self.rho * layer.cached_biases + (1 - self.rho) * (layer.dbiases ** 2)
-		#rho regulate the impact of the cache and the impact of dweigths. more rho near from 1, less dweights have impact
-		# more rho near from 0 and less cache have impact
-		weight_update = layer.dweights * np.sqrt(((layer.cached_weights_prev + self.epsilon)) / (layer.cached_weights + self.epsilon))
-		biases_update = layer.dbiases * np.sqrt(( (layer.cached_biases_prev + self.epsilon)) / (layer.cached_biases + self.epsilon))
-		# we update the weight by the product of gradient and the sqrt of the delta cached
-
-		layer.weights -= weight_update
-		layer.biases -= biases_update
-
-	def post_update_params(self):
-		pass
 
 class Adam(Optimizer):
 	def __init__(self, learning_rate=0.001, decay=.0, epsilon=1e-7, beta1=0.9, beta2=0.999, **kwargs):
@@ -219,10 +188,8 @@ def optimizer(optimizer:str,*args, **kwargs)->Optimizer:
 		return Adagrad(**kwargs)
 	if (optimizer == "rmsprop"):
 		return RMSProp(**kwargs)
-	if (optimizer == 'adadelta'):
-		return Adadelta( **kwargs)
 	if (optimizer == "adam"):
 		return Adam(**kwargs)
 	return None
 
-__all__ = ['Optimizer', 'SGD', 'Adagrad', 'RMSProp', 'Adadelta', 'Adam', 'optimizer']
+__all__ = ['Optimizer', 'SGD', 'Adagrad', 'RMSProp', 'Adam', 'optimizer']

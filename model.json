@@ -1,12 +1,13 @@
 {
-	"loss_function": "binarycrossentropy",
-	"early_stopping": true,
+	"loss_function": "BinaryCrossEntropy",
 	"layers": [
-		{"type": "Dense", "units": 24, "activation": "relu", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}},
-		{"type": "Dense", "units": 24, "activation": "relu", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}},
-		{"type": "Dense", "units": 2, "activation": "sigmoid", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}}
+			{"type": "Dense", "units": 24, "activation": "ReLU", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 2}}},
+			{"type": "Dense", "units": 24, "activation": "ReLU", "weights_initializer": {"type": "heUniform", "params": {"n_inputs": 24}}},
+			{"type": "Dense", "units": 1, "activation": "Sigmoid", "weights_initializer": {"type": "xavier", "params": {"n_inputs": 24, "n_outputs": 1}}}
 	],
-	"epochs": 2001,
-	"batch_size": 0,
-	"optimizer": {"type": "SGD", "params": {"momentum": 0.9}}
+	"epochs": 1001,
+	"batch_size": 32,
+	"optimizer": {"type": "Adam", "params": {"learning_rate": 0.001}},
+	"early_stopping": {"patience": 0, "monitor": "val_loss", "min_delta": 0.0001},
+	"data": "data.csv"
 }

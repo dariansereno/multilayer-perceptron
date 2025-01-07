@@ -6,6 +6,7 @@ from .model import Model
 from . import activation as Activation
 from . import initializer as Initializer
 import pandas as pd
+from . import EarlyStopping
 
 def extract_csv(filepath: str):
   return pd.read_csv(filepath, header=None)
@@ -28,13 +29,16 @@ def parse_model_json(filename: str, preprocess_func = None) -> dict:
 			'epochs': validate_epochs,
 			'batch_size': validate_batch_size,
 			'optimizer': validate_optimizer,
+			'early_stopping': validate_early_stopping,
 			#'data': validate_csv_data,
 		}
 		
 		for field, validator in field_validators.items():
 			if field not in json_model:
-				raise ModelConfigurationError(f"No {field} provided.")
-			validator(json_model[field])
+				if field != 'early_stopping':
+					raise ModelConfigurationError(f"No {field} provided.")
+			else:
+				validator(json_model[field])
 		
 		loss = Loss.loss(json_model['loss_function'])
 		layers:list[Layer.Layer] = []
@@ -52,6 +56,7 @@ def parse_model_json(filename: str, preprocess_func = None) -> dict:
 		optimizer = Optimizer.optimizer(json_model['optimizer']['type'], json_model['optimizer']['params'])
 		epochs = int(json_model['epochs'])
 		batch_size = int(json_model['batch_size'])
+		early_stopping = EarlyStopping.early_stopping(json_model['early_stopping']) if 'early_stopping' in json_model else None
 		try:
 			validate_csv_data(json_model['data'])
 			if (preprocess_func):
@@ -60,7 +65,7 @@ def parse_model_json(filename: str, preprocess_func = None) -> dict:
 				raise ModelConfigurationError("No preprocess function given.")
 		except:
 			data = None
-		return {"loss": loss, "layers": layers, "activations": activations, "optimizer": optimizer, "epochs": epochs, "batch_size": batch_size, "data": data}
+		return {"loss": loss, "layers": layers, "activations": activations, "optimizer": optimizer, "epochs": epochs, "batch_size": batch_size, "early_stopping": early_stopping,"data": data}
 	
 	#except ModelConfigurationError as e:
 	#	print(e)
@@ -83,7 +88,7 @@ def compile_and_fit_parsed_model(model_data: dict, preprocess_func = None, data:
 	model_data["layers"][0].updateInputs(train_X.shape[1])
 	for layer, activation in zip(model_data["layers"], model_data["activations"]):
 		model.add(layer, activation)
-	model.compile(model_data["optimizer"], model_data["loss"])
+	model.compile(model_data["optimizer"], model_data["loss"], model_data["early_stopping"])
 	model.fit(train_X, train_Y, model_data["batch_size"], epochs=model_data["epochs"], display=display, plot=plot)
 	return model
 
@@ -113,6 +118,12 @@ def validate_loss_function(value):
 	loss = Loss.loss(value)
 	if loss is None:
 		raise ModelConfigurationError(f"Loss function '{value}' does not exist.")
+
+def validate_early_stopping(value):
+	early_stop = EarlyStopping.early_stopping(value);
+	if early_stop is None:
+		raise ModelConfigurationError(f"Early stopping '{value}' does not exist.")
+
 
 def validate_layers(layers):
 	for index, l in enumerate(layers):
@@ -159,7 +170,7 @@ def validate_optimizer(value):
 		raise ModelConfigurationError("No params in optimizer field")
 	for param in value["params"].values():
 		try:
-			int(param)
+			float(param)
 		except Exception as e:
 			raise ModelConfigurationError("Optimizer params not a number")
 	optimizer = Optimizer.optimizer(value['type'], value['params'])

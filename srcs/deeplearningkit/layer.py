@@ -11,16 +11,12 @@ class Layer(ABC):
 	dinputs: np.ndarray
 	dbiases: np.ndarray
 
-	def __init__(self, n_inputs, n_neurons, initializer: Initializer=None, weight_regularizer_l1 = 0, bias_regularizer_l1 = 0, weight_regularizer_l2 = 0, bias_regularizer_l2 = 0):
+	def __init__(self, n_inputs, n_neurons, initializer: Initializer=None):
 		self.n_inputs = n_inputs
 		self.n_neurons = n_neurons
 		self.shape = (n_inputs, n_neurons)
 		self.initializer = initializer
 		self.initialize_weights()
-		self.weight_regularizer_l1 = weight_regularizer_l1
-		self.weight_regularizer_l2 = weight_regularizer_l2
-		self.bias_regularizer_l1 = bias_regularizer_l1
-		self.bias_regularizer_l2 = bias_regularizer_l2
 
 	def initialize_weights(self):
 		if self.initializer is not None:
