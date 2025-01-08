@@ -32,8 +32,10 @@ class Optimizer(ABC):
 	def post_update_params(self):
 		pass
 
+# Descente de gradient classique ou avec momentum
+# Le taux du momentum est equivalent a tout les poids
 class SGD(Optimizer):
-	def __init__(self, learning_rate=1.0, decay=0.0, momentum=.0, **kwargs):
+	def __init__(self, learning_rate=1.0, decay=0.0, momentum=.5, **kwargs):
 		super().__init__(learning_rate, decay)
 		self.momentum = momentum
 
@@ -69,6 +71,8 @@ class SGD(Optimizer):
 	def post_update_params(self):
 		self.iterations += 1
 
+# Amelioration du SGD avec momentum avec l'ajout d'un cache sur la durée qui stocke tout les gradients des poids au carré et
+# le learning rate est adapté a chaque gradient (plus le gradient est grand, plus le learning rate diminue)
 class Adagrad(Optimizer):
 	def __init__(self, learning_rate=1.0, decay=.0, epsilon=1e-7, **kwargs):
 		super().__init__(learning_rate, decay)
@@ -91,6 +95,7 @@ class Adagrad(Optimizer):
 	def post_update_params(self):
 		self.iterations += 1
 
+# Amélioration de l'Adagrad avec l'ajout d'un facteur d'oublie du cache
 class RMSProp(Optimizer):
 	def __init__(self, learning_rate=0.001, decay=.0, epsilon=1e-7, rho=0.9, **kwargs):
 		super().__init__(learning_rate, decay)
@@ -122,6 +127,9 @@ class RMSProp(Optimizer):
 	def post_update_params(self):
 		self.iterations += 1
 
+# Fusion d'Adagrad et RMSProp et ajout d'une diminution de l'impact de ces features au fil des iterations.
+# Plus on avance et moins le momentum a d'importance
+# Plus on avance et moins le cache a d'importance et plus il en a au debut  (convergence rapide)
 class Adam(Optimizer):
 	def __init__(self, learning_rate=0.001, decay=.0, epsilon=1e-7, beta1=0.9, beta2=0.999, **kwargs):
 		self.learning_rate = learning_rate

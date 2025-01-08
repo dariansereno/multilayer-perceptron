@@ -4,13 +4,14 @@ class Initializer:
 	def __call__(self, shape: tuple) -> np.ndarray:
 		pass
 
+# Distribution normal pour tout les neuronnes
 class RandomNormal(Initializer):
 	def __init__(self, mean=0.5, std=1, **kwargs):
 		self.mean = mean
 		self.std = std
 	def __call__(self, shape: tuple) -> np.ndarray:
 		return np.random.normal(self.mean, self.std, shape)
-
+# Zero a tout les neuronnes
 class Zero(Initializer):
 	def __init__(self):
 		pass
@@ -18,6 +19,7 @@ class Zero(Initializer):
 	def __call__(self, shape: tuple) -> np.ndarray:
 		return np.zeros(shape)
 
+#Distribution normal entre l'écart-type 2 / n_inputs, fait pour eviter le vanishing gradient avec ReLU
 class HeNormal(Initializer):
 	def __init__(self, n_inputs=10, **kwargs):
 		self.n_inputs = n_inputs
@@ -26,6 +28,8 @@ class HeNormal(Initializer):
 		std = np.sqrt(2.0 / self.n_inputs)
 		return np.random.randn(*shape) * std
 
+# Distribution uniforme entre l'ecart-type -6 / n_input => 6 / n_inputs.
+# Variante de HeNormal en uniforme
 class HeUniform(Initializer):
 	def __init__(self, n_inputs=2, **kwargs):
 		self.n_inputs = n_inputs
@@ -34,7 +38,8 @@ class HeUniform(Initializer):
 		std = np.sqrt(6.0 / self.n_inputs)
 		return np.random.uniform(-std, std, shape)
 
-
+#Distrubition uniforme entre l'intervalle  -6 / (n_input - n_outputs) =>  6 / (n_input - n_outputs)
+#Evite le vanishing et exploding gradient
 class Xavier(Initializer):
 	def __init__(self, n_inputs=2, n_outputs=2, *kwargs):
 		self.n_inputs = n_inputs
@@ -44,6 +49,8 @@ class Xavier(Initializer):
 		limit = np.sqrt(6 / (self.n_inputs + self.n_outputs))
 		return np.random.uniform(-limit, limit, shape)
 
+# Distribution uniforme entre - 1/ sqrt(n_inputs) => 1 / sqrt(n__inputs)
+# Pour Sigmoid et TanH
 class LeCun(Initializer):
 	def __init__(self, n_inputs, **kwargs):
 		self.n_inputs = n_inputs

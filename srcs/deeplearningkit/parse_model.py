@@ -7,6 +7,11 @@ from . import activation as Activation
 from . import initializer as Initializer
 import pandas as pd
 from . import EarlyStopping
+import numpy as np
+
+def to_one_hot(y, num_classes=2):
+	y = y.flatten()
+	return np.eye(num_classes)[y]
 
 def extract_csv(filepath: str):
   return pd.read_csv(filepath, header=None)
@@ -88,6 +93,10 @@ def compile_and_fit_parsed_model(model_data: dict, preprocess_func = None, data:
 	model_data["layers"][0].updateInputs(train_X.shape[1])
 	for layer, activation in zip(model_data["layers"], model_data["activations"]):
 		model.add(layer, activation)
+	if model.activations[model.activations.__len__() - 1].name == "Softmax":
+		n_outputs = model.layers[model.n_layer - 1].n_neurons
+		train_Y = to_one_hot(train_Y, n_outputs)
+	#train_Y = to_one_hot(train_Y)
 	model.compile(model_data["optimizer"], model_data["loss"], model_data["early_stopping"])
 	model.fit(train_X, train_Y, model_data["batch_size"], epochs=model_data["epochs"], display=display, plot=plot)
 	return model

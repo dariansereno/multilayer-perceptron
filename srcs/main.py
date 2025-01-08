@@ -2,9 +2,12 @@ import deeplearningkit as nn
 
 import numpy as np
 from preprocess import preprocess_binary_output_data
-from spiral_data import create_data
 from tools import extract_csv, to_one_hot
 import pandas as pd
+
+def to_one_hot(y, num_classes=2):
+	y = y.flatten()
+	return np.eye(num_classes)[y]
 
 def main():
 	#Model: nn.Model = nn.parse_model_json("../model.json")
@@ -18,7 +21,7 @@ def main():
 	print("	- Multilayer Perceptron - \n")
 	print("you can exit by typing : 'exit' or 'quit' at anytime\n")
 	while True:
-		#try:
+		try:
 			print("--- choose phase : --")
 			print("1) preprocess dataset")
 			if dataset is not None:
@@ -43,6 +46,8 @@ def main():
 			if (option_choosed == 1):
 				#dataset = (train_X, train_Y), (test_X, test_Y) = create_data(1000, 2)
 				dataset = (train_X, train_Y), (test_X, test_Y) = preprocess_binary_output_data(extract_csv(path))
+				#test_Y = to_one_hot(test_Y)
+				#train_Y = to_one_hot(train_Y)
 				isDataset = True
 				print(f"train shape : {train_X.shape}, {train_Y.shape}, test shape : {test_X.shape}, {test_Y.shape}")
 				#if (test_Y.shape[1] == 1)
@@ -51,12 +56,17 @@ def main():
 				model = nn.compile_and_fit_parsed_model(model_data, preprocess_func=None, data=dataset)
 				isModel = True
 			elif (option_choosed == 3 and isDataset and isModel):
+				if model.activations[model.activations.__len__() - 1].name == "Softmax":
+					n_outputs = model.layers[model.n_layer - 1].n_neurons
+					test_Y = to_one_hot(test_Y, n_outputs)
+					train_Y = to_one_hot(train_Y, n_outputs)
+				#if model.activations[model.activations.__len__() - 1].
 				res = model.evaluate(test_X, test_Y)
 				print("Accuracy : ", res["val_accuracy"], "loss : ", res["val_loss"], "true table: ", res["true_table"])
 			else:
 				print("Invalid input.")
-		#except Exception as e:
-		#	print("Error : ", e)
+		except Exception as e:
+			print("Error : ", e)
 
 
 

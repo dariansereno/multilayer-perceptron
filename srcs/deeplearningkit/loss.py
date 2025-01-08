@@ -18,6 +18,7 @@ class Loss(ABC):
 		data_loss = np.mean(sample_losses) # calcul la moyenne de la loss
 		return data_loss
 	
+# Entropy croisé pour classer des categories.
 class CategoricalCrossEntropy(Loss):
 	def forward(self, y_pred, y_true: np.ndarray):
 		samples = len(y_pred)
@@ -32,7 +33,7 @@ class CategoricalCrossEntropy(Loss):
 			correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
 		
 		negative_log_likelihoods = -np.log(correct_confidences)
-		# ici on met au -logarithme (naturel !! base E) les resultat. Ca permet de pouvoir revenir au resultat en 
+		# ici on met au -logarithme (naturel !! base E) les resultats. Ca permet de pouvoir revenir au resultat en 
 		# mettant en exponentiel le logarithme. (pratique pour la backpropagation et l'optimisation)
 		return negative_log_likelihoods
 	def backward(self, dvalues, y_true):
@@ -50,16 +51,15 @@ class BinaryCrossEntropy(Loss):
 		y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
 
 		sample_losses = -(y_true * np.log(y_pred_clipped) + (1 - y_true) * np.log(1 - y_pred_clipped))
-		sample_losses = np.mean(sample_losses, axis=-1)
+		return np.mean(sample_losses, axis=-1)
 
-		return sample_losses
 	def backward(self, dvalues, y_true):
-		samples = len(dvalues)
-		outputs = len(dvalues[0])
+			samples = len(dvalues)
 
-		clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
-		self.dinputs = -(y_true / clipped_dvalues - (1 - y_true) / (1 - clipped_dvalues)) / outputs
-		self.dinputs = self.dinputs / samples
+			clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
+
+			self.dinputs = -(y_true / clipped_dvalues - (1 - y_true) / (1 - clipped_dvalues))
+			self.dinputs = self.dinputs / samples
 
 def loss(loss:str) -> Loss:
 	loss = loss.lower()

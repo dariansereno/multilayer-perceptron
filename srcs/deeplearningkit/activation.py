@@ -6,6 +6,7 @@ class Activation(ABC):
 	inputs: np.ndarray
 	output: np.ndarray
 	dinputs: np.ndarray
+	name = str
 
 	@abstractmethod
 	def forward(self, inputs):
@@ -16,6 +17,9 @@ class Activation(ABC):
 		pass
 
 class ReLU(Activation):
+	def __init__(self):
+		self.name = "ReLU"
+
 	def forward(self, inputs):
 		self.inputs = inputs
 		self.output = np.maximum(0, inputs)
@@ -24,13 +28,28 @@ class ReLU(Activation):
 		self.dinputs[self.inputs <= 0] = 0
 
 class Sigmoid(Activation):
+	def __init__(self):
+		self.name = "Sigmoid"
+
 	def forward(self, inputs):
 		self.inputs = inputs
 		self.output = 1/(1 + np.exp(-inputs))
 	def backward(self, dvalues):
 		self.dinputs = dvalues * (1 - self.output) * self.output
 	
+class TanH(Activation):
+	def __init__(self):
+		self.name = "TanH"
+	def forward(self, inputs):
+		self.inputs = inputs
+		self.output = np.tanh(inputs)
+
+	def backward(self, dvalues):
+		self.dinputs = (1 - self.output ** 2) * dvalues
+
 class Softmax(Activation):
+	def __init__(self):
+		self.name = "Softmax"
 	def forward(self, inputs):
 		# on prend tout les inputs (matrice de vecteur ex : [[1, 2, 3], [2, 1, 3], [3, 1, 2]])
 		# pour chaque vecteur on soustrais la valeur maximal ex : [[1 - 3, 2 - 3, 3 - 3], [2 - 3, 1 - 3, 3 - 3], [3 - 3, 1 - 3, 2 - 3]]
@@ -50,13 +69,14 @@ class Softmax(Activation):
 			self.dinputs[index] = np.dot(jacobian_matrix, single_dvalues)
 
 class Softmax_CategoricalCrossEntropy(Activation):
+	
 	def __init__(self):
+		self.name = "Softmax_CategoricalCrossEntropy"
 		self.activation = Softmax()
 		self.loss = CategoricalCrossEntropy()
 	def forward(self, inputs, y_true):
 		self.activation.forward(inputs)
 		self.output = self.activation.output
-		print( self.loss.calculate(self.output, y_true))
 		return self.loss.calculate(self.output, y_true)
 
 	def backward(self, dvalues, y_true):
@@ -77,6 +97,8 @@ def activation(activation:str)->Activation:
 		return Softmax()
 	elif activation == "softmax_categoricalcrossentropy":
 		return Softmax_CategoricalCrossEntropy()
+	elif activation == "tanh":
+		return TanH()
 	raise ValueError(f"ActivationError: Unknown activation type :'{activation}'")
 
-__all__ = ['Activation', 'ReLU', 'Sigmoid', 'Softmax', 'Softmax_CategoricalCrossEntropy', 'activation']
+__all__ = ['Activation', 'ReLU', 'Sigmoid', 'Softmax', 'Softmax_CategoricalCrossEntropy','tanh', 'activation']
